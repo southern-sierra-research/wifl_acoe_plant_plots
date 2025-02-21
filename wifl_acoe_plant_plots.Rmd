@@ -50,6 +50,14 @@ heights = unique(sapply(strsplit(hit_col_names," "), `[`, 2))
 
 e_density_hits_sum = e_density %>%
   select(contains(base_names))
+```
+
+## Tally hits 
+
+Tally number of 1m heights that have veg at each 1m stop along transects in each cardinal direction.
+
+```{r hittally}
+
 hit_tally = function(df, hght){
   df %>%
     select(contains(hght)) %>%
@@ -130,7 +138,48 @@ s_density_hits_sum =
   rename_with(~ gsub(" D", " dead", .x, fixed = T))
 
 write.csv(s_density_hits_sum, paste0("s_density_hits_", year, "_sum.csv"), row.names = F)
-  
-  
+
 ```
 
+## Join in plot data
+
+This is an example of how you would join  plot data to other subtables for analyses that require this.
+
+Just show an example of 
+
+```{r joinplot}
+library(dplyr)
+
+veg_plots = data_list$Vegetation_Sampling_Plots_0
+names(veg_plots)
+
+veg_den_plot_join = function(veg = veg_plots,
+                             den = e_density_hits_sum){
+  veg %>%
+  rename(OBJECTID_plot = OBJECTID,
+         Creator_plot = Creator,
+         CreationDate_plot = CreationDate,
+         LastEditor_plot = LastEditor,
+         LastEditDate_plot = LastEditDate,
+         Longitude = x,
+         Latitude = y) %>%
+  left_join(den, by = join_by(GlobalID == "Parent GUID"))
+}
+
+e_density_hits_sum_w_plot = 
+  veg_den_plot_join(veg = veg_plots,
+                    den = e_density_hits_sum)
+
+w_density_hits_sum_w_plot = 
+  veg_den_plot_join(veg = veg_plots,
+                    den = w_density_hits_sum)
+
+n_density_hits_sum_w_plot = 
+  veg_den_plot_join(veg = veg_plots,
+                    den = n_density_hits_sum)
+
+s_density_hits_sum_w_plot = 
+  veg_den_plot_join(veg = veg_plots,
+                    den = s_density_hits_sum)
+
+```
